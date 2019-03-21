@@ -1,0 +1,84 @@
+import tkinter as tk
+from tkinter import messagebox, ttk, filedialog
+import numpy, statistics
+
+class App(tk.Tk):
+
+    def __init__(self):
+        tk.Tk.__init__(self)
+        
+        self.title("Анализ файла")
+        self.geometry("800x200")
+        self.resizable(False, False)
+        
+        self.panelFrame = tk.Frame(self, height = 200, width = 800, bg = 'black', bd=20)
+        self.panelFrame.pack(side = 'top', fill = 'x')
+        self.progressbar = ttk.Progressbar(self.panelFrame, orient='horizontal',
+                                           length=300, mode="indeterminate")
+        self.a = tk.Entry(self.panelFrame)
+        self.a.place(x = 10, y = 10, width = 400, height = 40)
+        self.labelarr = []
+        for j in range(4):
+            y = 60 + j*20
+            j = tk.Label(self.panelFrame, bg = 'black', justify='left', fg="#fff")
+            j.place(x = 10, y = y, height = 20)
+            self.labelarr.append(j)
+        
+        self.loadBtn = ttk.Button(self.panelFrame, text = 'Обзор', command=self.LoadFile)
+        self.scanBtn = ttk.Button(self.panelFrame, text = 'Scan', command=self.scan)
+        self.quitBtn = ttk.Button(self.panelFrame, text = 'Quit', command=self.Quit)
+        self.loadBtn.place(x = 420, y = 10, width = 100, height = 40)
+        self.scanBtn.place(x = 540, y = 10, width = 100, height = 40)
+        self.quitBtn.place(x = 660, y = 10, width = 100, height = 40)
+        
+        
+    def Quit(self):
+        self.destroy()
+    
+    def LoadFile(self): 
+        fn = filedialog.Open(self, filetypes = [('*.txt files', '.txt')]).show()
+        if fn == '':
+            return
+        self.a.delete(0, "end") 
+        self.a.insert(0, fn)
+        self.clean()   
+        
+
+    def scan(self):
+                    
+        file = self.a.get()
+        if file == '':
+            messagebox.showinfo("Ошибка", "Выберите файл")
+            return
+        try:
+            self.scanBtn.config(state="disabled")
+            with open(file) as text:
+                array = [int(row.strip()) for row in text]
+        except:
+            messagebox.showinfo("Ошибка", "Неправильный путь к файлу, файл поврежден или файл содержит не только цифры")
+            self.clean()
+            return
+        if array == []:
+            messagebox.showinfo("Ошибка", "Файл пуст")
+        else:
+            arrayrezult = [str(max(array)), str(min(array)), str(numpy.mean(array)), str(statistics.median(array))] 
+            print(arrayrezult)        
+            self.rezelt(arrayrezult)
+                   
+            
+
+    def clean(self):
+        for i in range(4):
+            self.labelarr[i]["text"] = ""
+       
+
+    def rezelt(self, array):
+        word = ["Максимальное значение:  ", "Минимальное значение:  ", "Среднее арифметическое:  ",  "Медиана:  "]
+        for i in range(4):
+            self.labelarr[i]["text"] = word[i] + array[i]
+        self.scanBtn.config(state="enable")
+        
+        
+if __name__ == "__main__":
+    app = App()
+    app.mainloop()
